@@ -58,6 +58,34 @@
     #controls button:hover { background: #0053a6; }
     #controls button:active { background: #004085; }
 
+    /* Movement controls */
+    #movementControls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    #movementControls .row {
+      display: flex;
+      gap: 2px;
+    }
+    #movementControls button {
+      width: 32px;
+      height: 32px;
+      padding: 4px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Rotate button */
+    #rotateBtn {
+      background: #28a745;
+    }
+    #rotateBtn:hover { background: #218838; }
+    #rotateBtn:active { background: #1e7e34; }
+
     /* Canvas */
     #canvas {
       display: block;
@@ -100,17 +128,17 @@
       resize: vertical;
     }
     /* wrap the canvas so it scrolls horizontally */
-  #canvasWrapper {
+    #canvasWrapper {
       width: 100%;
       overflow-x: auto;
       overflow-y: hidden;
       border: 1px solid #ccc;
       border-radius: 4px;
       margin-bottom: 12px;
-  }
-  #canvasWrapper canvas {
-    display: block;
-  }
+    }
+    #canvasWrapper canvas {
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -126,12 +154,27 @@
         <input type="number" id="inputRows" min="1" value="32">
       </label>
       <button id="resizeBtn">Resize Grid</button>
+
+      <!-- Movement controls in game controller layout -->
+      <div id="movementControls">
+        <div class="row">
+          <button id="upBtn" title="Move Up">↑</button>
+        </div>
+        <div class="row">
+          <button id="leftBtn" title="Move Left">←</button>
+          <button id="downBtn" title="Move Down">↓</button>
+          <button id="rightBtn" title="Move Right">→</button>
+        </div>
+      </div>
+
+      <!-- Rotate button -->
+      <button id="rotateBtn" title="Rotate 90° Clockwise">⟲</button>
     </div>
 
-  <!-- scroll-wrapper -->
-  <div id="canvasWrapper">
-    <canvas id="canvas"></canvas>
-  </div>
+    <!-- scroll-wrapper -->
+    <div id="canvasWrapper">
+      <canvas id="canvas"></canvas>
+    </div>
 
     <!-- Base64 export/import -->
     <div id="base64Controls">
@@ -189,6 +232,75 @@
       };
     }
 
+    // Movement functions
+    function moveUp() {
+      if (rows <= 1) return;
+      const topRow = pixels[0].slice();
+      for (let y = 0; y < rows - 1; y++) {
+        pixels[y] = pixels[y + 1].slice();
+      }
+      pixels[rows - 1] = topRow;
+      drawGrid();
+    }
+
+    function moveDown() {
+      if (rows <= 1) return;
+      const bottomRow = pixels[rows - 1].slice();
+      for (let y = rows - 1; y > 0; y--) {
+        pixels[y] = pixels[y - 1].slice();
+      }
+      pixels[0] = bottomRow;
+      drawGrid();
+    }
+
+    function moveLeft() {
+      if (cols <= 1) return;
+      for (let y = 0; y < rows; y++) {
+        const leftmostPixel = pixels[y][0];
+        for (let x = 0; x < cols - 1; x++) {
+          pixels[y][x] = pixels[y][x + 1];
+        }
+        pixels[y][cols - 1] = leftmostPixel;
+      }
+      drawGrid();
+    }
+
+    function moveRight() {
+      if (cols <= 1) return;
+      for (let y = 0; y < rows; y++) {
+        const rightmostPixel = pixels[y][cols - 1];
+        for (let x = cols - 1; x > 0; x--) {
+          pixels[y][x] = pixels[y][x - 1];
+        }
+        pixels[y][0] = rightmostPixel;
+      }
+      drawGrid();
+    }
+
+    function rotate90Clockwise() {
+      // Create new rotated matrix: new[x][rows-1-y] = old[y][x]
+      const newPixels = Array.from({ length: cols }, () => Array(rows).fill(0));
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          newPixels[x][rows - 1 - y] = pixels[y][x];
+        }
+      }
+
+      // Swap dimensions
+      [cols, rows] = [rows, cols];
+      pixels = newPixels;
+
+      // Update canvas size
+      canvas.width = cols * CELL_SIZE;
+      canvas.height = rows * CELL_SIZE;
+
+      // Update input fields
+      document.getElementById('inputCols').value = cols;
+      document.getElementById('inputRows').value = rows;
+
+      drawGrid();
+    }
+
     let drawing = false, mode = 1, last = {};
     canvas.addEventListener('mousedown', e => {
       const { x, y } = getCell(e);
@@ -225,6 +337,13 @@
       canvas.height = rows * CELL_SIZE;
       drawGrid();
     });
+
+    // Movement button event listeners
+    document.getElementById('upBtn').addEventListener('click', moveUp);
+    document.getElementById('downBtn').addEventListener('click', moveDown);
+    document.getElementById('leftBtn').addEventListener('click', moveLeft);
+    document.getElementById('rightBtn').addEventListener('click', moveRight);
+    document.getElementById('rotateBtn').addEventListener('click', rotate90Clockwise);
 
     document.getElementById('exportBtn').addEventListener('click', () => {
       let bits = '';

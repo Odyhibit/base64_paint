@@ -2,388 +2,118 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>1-Bit Editor + Base64 Import/Export</title>
-  <style>
-    /* Reset & base */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background: #f0f2f5;
-      color: #333;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    #container {
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      max-width: 640px;
-      width: 100%;
-      padding: 20px;
-    }
-
-    /* Top controls */
-    #controls {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: flex-end;
-      margin-bottom: 16px;
-    }
-    #controls label {
-      display: flex;
-      flex-direction: column;
-      font-size: 0.9rem;
-    }
-    #controls input {
-      margin-top: 4px;
-      width: 80px;
-      padding: 6px 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    #controls button {
-      padding: 8px 16px;
-      background: #0069d9;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    #controls button:hover { background: #0053a6; }
-    #controls button:active { background: #004085; }
-
-    /* Movement controls */
-    #movementControls {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
-    #movementControls .row {
-      display: flex;
-      gap: 2px;
-    }
-    #movementControls button {
-      width: 32px;
-      height: 32px;
-      padding: 4px;
-      font-size: 0.8rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* Rotate button */
-    #rotateBtn {
-      background: #28a745;
-    }
-    #rotateBtn:hover { background: #218838; }
-    #rotateBtn:active { background: #1e7e34; }
-
-    /* Canvas */
-    #canvas {
-      display: block;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      background: #fff;
-      cursor: crosshair;
-      margin: 0 auto 12px;
-    }
-
-    /* Base64 controls under canvas */
-    #base64Controls {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      margin-bottom: 12px;
-    }
-    #base64Controls button {
-      padding: 6px 12px;
-      background: #0069d9;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    #base64Controls button:hover { background: #0053a6; }
-    #base64Controls button:active { background: #004085; }
-
-    /* Output textarea */
-    #output {
-      width: 100%;
-      height: 100px;
-      padding: 8px;
-      font-family: monospace;
-      font-size: 0.9rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      resize: vertical;
-    }
-    /* wrap the canvas so it scrolls horizontally */
-    #canvasWrapper {
-      width: 100%;
-      overflow-x: auto;
-      overflow-y: hidden;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      margin-bottom: 12px;
-    }
-    #canvasWrapper canvas {
-      display: block;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Base64 Paint - 1-Bit Pixel Editor</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div id="container">
     <h1>Base64 Paint</h1>
+
     <!-- Grid size and resize -->
     <div id="controls">
       <label>
         Width:
-        <input type="number" id="inputCols" min="1" value="32">
+        <input type="number" id="inputCols" min="1" max="256" value="32">
       </label>
       <label>
         Height:
-        <input type="number" id="inputRows" min="1" value="32">
+        <input type="number" id="inputRows" min="1" max="256" value="32">
       </label>
       <button id="resizeBtn">Resize Grid</button>
+
+      <!-- Undo/Redo -->
+      <button id="undoBtn" title="Undo (Ctrl+Z)">↶ Undo</button>
+      <button id="redoBtn" title="Redo (Ctrl+Y)">↷ Redo</button>
+
+      <!-- Clear and Invert -->
+      <button id="clearBtn" title="Clear Canvas (C)">🗑️ Clear</button>
+      <button id="invertBtn" title="Invert Colors (I)">⚫⚪ Invert</button>
 
       <!-- Movement controls in game controller layout -->
       <div id="movementControls">
         <div class="row">
-          <button id="upBtn" title="Move Up">↑</button>
+          <button id="upBtn" title="Move Up (↑)">↑</button>
         </div>
         <div class="row">
-          <button id="leftBtn" title="Move Left">←</button>
-          <button id="downBtn" title="Move Down">↓</button>
-          <button id="rightBtn" title="Move Right">→</button>
+          <button id="leftBtn" title="Move Left (←)">←</button>
+          <button id="downBtn" title="Move Down (↓)">↓</button>
+          <button id="rightBtn" title="Move Right (→)">→</button>
         </div>
       </div>
 
       <!-- Rotate button -->
-      <button id="rotateBtn" title="Rotate 90° Clockwise">⟲</button>
+      <button id="rotateBtn" title="Rotate 90° Clockwise (R)">⟲</button>
     </div>
 
-    <!-- scroll-wrapper -->
+    <!-- Preset templates -->
+    <div id="presetControls">
+      <label>Quick Resize:</label>
+      <button data-size="8x8">8×8</button>
+      <button data-size="16x16">16×16</button>
+      <button data-size="32x32">32×32</button>
+      <button data-size="64x64">64×64</button>
+      <button data-size="128x128">128×128</button>
+    </div>
+
+    <!-- Tool controls -->
+    <div id="toolControls">
+      <button id="drawToolBtn" class="active" title="Draw Tool (D)">✏️ Draw</button>
+      <button id="fillToolBtn" title="Fill Tool (F)">🪣 Fill</button>
+
+      <!-- Zoom controls -->
+      <div id="zoomControls">
+        <button id="zoomOutBtn" title="Zoom Out">−</button>
+        <span id="zoomValue">16px</span>
+        <button id="zoomInBtn" title="Zoom In">+</button>
+      </div>
+
+      <!-- Grid toggle -->
+      <div class="toggle-switch">
+        <label for="gridToggle">Grid (G):</label>
+        <input type="checkbox" id="gridToggle" checked>
+      </div>
+
+      <!-- Mode indicator -->
+      <div id="modeIndicator" class="drawing">✏️ Drawing</div>
+    </div>
+
+    <!-- Canvas wrapper -->
     <div id="canvasWrapper">
       <canvas id="canvas"></canvas>
     </div>
 
     <!-- Base64 export/import -->
     <div id="base64Controls">
-      <button id="exportBtn">Export Base64</button>
-      <button id="loadBtn">Load Base64</button>
+      <button id="exportBtn" title="Export to Base64 (E)">📤 Export Base64</button>
+      <button id="loadBtn" title="Load from Base64 (L)">📥 Load Base64</button>
+      <button id="copyBtn" title="Copy Base64 to Clipboard">📋 Copy</button>
+      <button id="downloadBtn" title="Download as Text File">💾 Download</button>
+      <button id="exportPNGBtn" title="Export as PNG Image">🖼️ Export PNG</button>
     </div>
 
     <!-- Base64 textarea -->
     <textarea id="output" placeholder="Paste or export Base64 here…"></textarea>
+
+    <!-- Keyboard shortcuts help -->
+    <div id="keyboardHelp">
+      <h3>⌨️ Keyboard Shortcuts</h3>
+      <ul>
+        <li><kbd>D</kbd> - Draw tool</li>
+        <li><kbd>F</kbd> - Fill tool</li>
+        <li><kbd>Arrow Keys</kbd> - Move canvas</li>
+        <li><kbd>R</kbd> - Rotate</li>
+        <li><kbd>I</kbd> - Invert</li>
+        <li><kbd>C</kbd> - Clear</li>
+        <li><kbd>G</kbd> - Toggle grid</li>
+        <li><kbd>E</kbd> - Export</li>
+        <li><kbd>L</kbd> - Load</li>
+        <li><kbd>Ctrl+Z</kbd> - Undo</li>
+        <li><kbd>Ctrl+Y</kbd> - Redo</li>
+      </ul>
+    </div>
   </div>
 
-  <script>
-    const CELL_SIZE = 16;
-    let cols = 32, rows = 32;
-    let lastBitString = '';
-
-    const canvas = document.getElementById('canvas');
-    const ctx    = canvas.getContext('2d');
-    const out    = document.getElementById('output');
-
-    canvas.width  = cols * CELL_SIZE;
-    canvas.height = rows * CELL_SIZE;
-    let pixels = Array.from({ length: rows }, () => Array(cols).fill(0));
-
-    function drawGrid() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          if (pixels[y][x]) {
-            ctx.fillStyle = '#000';
-            ctx.fillRect(x*CELL_SIZE, y*CELL_SIZE, CELL_SIZE, CELL_SIZE);
-          }
-        }
-      }
-      ctx.strokeStyle = '#e0e0e0';
-      for (let i = 0; i <= cols; i++) {
-        ctx.beginPath();
-        ctx.moveTo(i*CELL_SIZE, 0);
-        ctx.lineTo(i*CELL_SIZE, rows*CELL_SIZE);
-        ctx.stroke();
-      }
-      for (let i = 0; i <= rows; i++) {
-        ctx.beginPath();
-        ctx.moveTo(0, i*CELL_SIZE);
-        ctx.lineTo(cols*CELL_SIZE, i*CELL_SIZE);
-        ctx.stroke();
-      }
-    }
-
-    function getCell(evt) {
-      const r = canvas.getBoundingClientRect();
-      return {
-        x: Math.floor((evt.clientX - r.left) / CELL_SIZE),
-        y: Math.floor((evt.clientY - r.top ) / CELL_SIZE)
-      };
-    }
-
-    // Movement functions
-    function moveUp() {
-      if (rows <= 1) return;
-      const topRow = pixels[0].slice();
-      for (let y = 0; y < rows - 1; y++) {
-        pixels[y] = pixels[y + 1].slice();
-      }
-      pixels[rows - 1] = topRow;
-      drawGrid();
-    }
-
-    function moveDown() {
-      if (rows <= 1) return;
-      const bottomRow = pixels[rows - 1].slice();
-      for (let y = rows - 1; y > 0; y--) {
-        pixels[y] = pixels[y - 1].slice();
-      }
-      pixels[0] = bottomRow;
-      drawGrid();
-    }
-
-    function moveLeft() {
-      if (cols <= 1) return;
-      for (let y = 0; y < rows; y++) {
-        const leftmostPixel = pixels[y][0];
-        for (let x = 0; x < cols - 1; x++) {
-          pixels[y][x] = pixels[y][x + 1];
-        }
-        pixels[y][cols - 1] = leftmostPixel;
-      }
-      drawGrid();
-    }
-
-    function moveRight() {
-      if (cols <= 1) return;
-      for (let y = 0; y < rows; y++) {
-        const rightmostPixel = pixels[y][cols - 1];
-        for (let x = cols - 1; x > 0; x--) {
-          pixels[y][x] = pixels[y][x - 1];
-        }
-        pixels[y][0] = rightmostPixel;
-      }
-      drawGrid();
-    }
-
-    function rotate90Clockwise() {
-      // Create new rotated matrix: new[x][rows-1-y] = old[y][x]
-      const newPixels = Array.from({ length: cols }, () => Array(rows).fill(0));
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          newPixels[x][rows - 1 - y] = pixels[y][x];
-        }
-      }
-
-      // Swap dimensions
-      [cols, rows] = [rows, cols];
-      pixels = newPixels;
-
-      // Update canvas size
-      canvas.width = cols * CELL_SIZE;
-      canvas.height = rows * CELL_SIZE;
-
-      // Update input fields
-      document.getElementById('inputCols').value = cols;
-      document.getElementById('inputRows').value = rows;
-
-      drawGrid();
-    }
-
-    let drawing = false, mode = 1, last = {};
-    canvas.addEventListener('mousedown', e => {
-      const { x, y } = getCell(e);
-      mode = pixels[y]?.[x] ? 0 : 1;
-      drawing = true;
-      last = { x, y };
-      pixels[y][x] = mode;
-      drawGrid();
-    });
-    canvas.addEventListener('mousemove', e => {
-      if (!drawing) return;
-      const { x, y } = getCell(e);
-      if ((x!==last.x||y!==last.y) && pixels[y]?.[x] !== mode) {
-        pixels[y][x] = mode;
-        last = { x, y };
-        drawGrid();
-      }
-    });
-    ['mouseup','mouseleave'].forEach(evt =>
-      canvas.addEventListener(evt, () => drawing = false)
-    );
-
-    document.getElementById('resizeBtn').addEventListener('click', () => {
-      const newC = +document.getElementById('inputCols').value;
-      const newR = +document.getElementById('inputRows').value;
-      if (newC < 1 || newR < 1) return;
-      const np = Array.from({ length: newR }, (_, yy) =>
-        Array.from({ length: newC }, (_, xx) =>
-          (yy<rows && xx<cols) ? pixels[yy][xx] : 0
-        )
-      );
-      cols = newC; rows = newR; pixels = np;
-      canvas.width  = cols * CELL_SIZE;
-      canvas.height = rows * CELL_SIZE;
-      drawGrid();
-    });
-
-    // Movement button event listeners
-    document.getElementById('upBtn').addEventListener('click', moveUp);
-    document.getElementById('downBtn').addEventListener('click', moveDown);
-    document.getElementById('leftBtn').addEventListener('click', moveLeft);
-    document.getElementById('rightBtn').addEventListener('click', moveRight);
-    document.getElementById('rotateBtn').addEventListener('click', rotate90Clockwise);
-
-    document.getElementById('exportBtn').addEventListener('click', () => {
-      let bits = '';
-      for (let y=0; y<rows; y++)
-        for (let x=0; x<cols; x++)
-          bits += pixels[y][x];
-      lastBitString = bits;
-      const bytes = [];
-      for (let i=0; i<bits.length; i+=8) {
-        bytes.push(parseInt(bits.slice(i,i+8).padEnd(8,'0'),2));
-      }
-      const arr = new Uint8Array(bytes);
-      let bin = '';
-      arr.forEach(b => bin += String.fromCharCode(b));
-      out.value = btoa(bin);
-    });
-
-    document.getElementById('loadBtn').addEventListener('click', () => {
-      const str = out.value.trim();
-      if (!str) return;
-      let raw;
-      try { raw = atob(str); }
-      catch { return alert('Invalid Base64'); }
-      let bits = '';
-      for (let i=0; i<raw.length; i++) {
-        bits += raw.charCodeAt(i).toString(2).padStart(8,'0');
-      }
-      lastBitString = bits;
-      // fill current grid only
-      for (let y=0; y<rows; y++) {
-        for (let x=0; x<cols; x++) {
-          const idx = y*cols + x;
-          pixels[y][x] = idx < bits.length ? +bits[idx] : 0;
-        }
-      }
-      drawGrid();
-    });
-
-    drawGrid();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>

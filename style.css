@@ -1,0 +1,367 @@
+/* Reset & base */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: #f0f2f5;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+#container {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  max-width: 800px;
+  width: 100%;
+  padding: 20px;
+}
+
+h1 {
+  margin-bottom: 16px;
+}
+
+/* Top controls */
+#controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+#controls label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+}
+#controls input {
+  margin-top: 4px;
+  width: 80px;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+#controls button {
+  padding: 8px 16px;
+  background: #0069d9;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#controls button:hover { background: #0053a6; }
+#controls button:active { background: #004085; }
+
+/* Movement controls */
+#movementControls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+#movementControls .row {
+  display: flex;
+  gap: 2px;
+}
+#movementControls button {
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Rotate button */
+#rotateBtn {
+  background: #28a745;
+}
+#rotateBtn:hover { background: #218838; }
+#rotateBtn:active { background: #1e7e34; }
+
+/* Clear button */
+#clearBtn {
+  background: #dc3545;
+}
+#clearBtn:hover { background: #c82333; }
+#clearBtn:active { background: #bd2130; }
+
+/* Invert button */
+#invertBtn {
+  background: #6f42c1;
+}
+#invertBtn:hover { background: #5a32a3; }
+#invertBtn:active { background: #4e2a8e; }
+
+/* Undo/Redo buttons */
+#undoBtn, #redoBtn {
+  background: #6c757d;
+}
+#undoBtn:hover, #redoBtn:hover { background: #5a6268; }
+#undoBtn:active, #redoBtn:active { background: #545b62; }
+#undoBtn:disabled, #redoBtn:disabled {
+  background: #c8ced3;
+  cursor: not-allowed;
+}
+
+/* Tool controls */
+#toolControls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+#toolControls button {
+  padding: 8px 16px;
+  background: #17a2b8;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#toolControls button:hover { background: #138496; }
+#toolControls button:active { background: #117a8b; }
+#toolControls button.active {
+  background: #0069d9;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Zoom controls */
+#zoomControls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#zoomControls button {
+  width: 32px;
+  height: 32px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#zoomValue {
+  font-size: 0.9rem;
+  min-width: 60px;
+  text-align: center;
+}
+
+/* Drawing mode indicator */
+#modeIndicator {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#modeIndicator.drawing {
+  background: #d4edda;
+  color: #155724;
+}
+
+#modeIndicator.erasing {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+#modeIndicator.filling {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+/* Canvas */
+#canvas {
+  display: block;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  cursor: crosshair;
+  margin: 0 auto 12px;
+  touch-action: none;
+}
+
+#canvas.fill-mode {
+  cursor: pointer;
+}
+
+/* wrap the canvas so it scrolls */
+#canvasWrapper {
+  width: 100%;
+  overflow: auto;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  max-height: 600px;
+}
+#canvasWrapper canvas {
+  display: block;
+}
+
+/* Base64 controls under canvas */
+#base64Controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+#base64Controls button {
+  padding: 6px 12px;
+  background: #0069d9;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#base64Controls button:hover { background: #0053a6; }
+#base64Controls button:active { background: #004085; }
+
+/* Export extra controls */
+#exportBtn {
+  background: #28a745;
+}
+#exportBtn:hover { background: #218838; }
+#exportBtn:active { background: #1e7e34; }
+
+#downloadBtn {
+  background: #17a2b8;
+}
+#downloadBtn:hover { background: #138496; }
+#downloadBtn:active { background: #117a8b; }
+
+#copyBtn {
+  background: #6f42c1;
+}
+#copyBtn:hover { background: #5a32a3; }
+#copyBtn:active { background: #4e2a8e; }
+
+#exportPNGBtn {
+  background: #fd7e14;
+}
+#exportPNGBtn:hover { background: #e86e0a; }
+#exportPNGBtn:active { background: #d56408; }
+
+/* Preset templates */
+#presetControls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+#presetControls button {
+  padding: 6px 12px;
+  background: #6c757d;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#presetControls button:hover { background: #5a6268; }
+#presetControls button:active { background: #545b62; }
+
+#presetControls label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+/* Output textarea */
+#output {
+  width: 100%;
+  height: 100px;
+  padding: 8px;
+  font-family: monospace;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+/* Keyboard shortcuts help */
+#keyboardHelp {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+#keyboardHelp h3 {
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+#keyboardHelp ul {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 4px;
+}
+
+#keyboardHelp kbd {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 2px 6px;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+/* Toggle switch for grid */
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.toggle-switch input[type="checkbox"] {
+  width: 40px;
+  height: 20px;
+  position: relative;
+  cursor: pointer;
+  appearance: none;
+  background: #ccc;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.toggle-switch input[type="checkbox"]:checked {
+  background: #28a745;
+}
+
+.toggle-switch input[type="checkbox"]::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  background: white;
+  transition: transform 0.2s;
+}
+
+.toggle-switch input[type="checkbox"]:checked::before {
+  transform: translateX(20px);
+}

@@ -317,6 +317,10 @@ class EditorState {
     tempCanvas.height = this.rows * this.cellSize;
     const tempCtx = tempCanvas.getContext('2d');
 
+    // Draw white background
+    tempCtx.fillStyle = '#fff';
+    tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
     // Draw pixels
     for (let y = 0; y < this.rows; y++) {
       for (let x = 0; x < this.cols; x++) {
@@ -415,6 +419,10 @@ class DrawingController {
     const pixels = this.state.pixels;
 
     ctx.clearRect(0, 0, this.state.canvas.width, this.state.canvas.height);
+
+    // Draw white background
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, this.state.canvas.width, this.state.canvas.height);
 
     // Draw pixels
     for (let y = 0; y < rows; y++) {
